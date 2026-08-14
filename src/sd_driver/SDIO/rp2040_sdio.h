@@ -113,7 +113,7 @@ sdio_status_t rp2040_sdio_tx_poll(sd_card_t *sd_card_p, uint32_t *bytes_complete
 // (Re)initialize the SDIO interface
 bool rp2040_sdio_init(sd_card_t *sd_card_p, float clk_div);
 
-void __not_in_flash_func(sdio_irq_handler)(sd_card_t *sd_card_p);
+void sdio_irq_handler(sd_card_t *sd_card_p);
 
 #ifdef __cplusplus
 }

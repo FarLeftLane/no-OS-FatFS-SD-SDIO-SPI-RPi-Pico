@@ -4,7 +4,7 @@
 //
 #include "dma_interrupts.h"
 
-static void dma_irq_handler(const uint DMA_IRQ_num, io_rw_32 *dma_hw_ints_p) {
+static void __time_critical_func(dma_irq_handler)(const uint DMA_IRQ_num, io_rw_32 *dma_hw_ints_p) {
     // Iterate through all of the SD cards
     for (size_t i = 0; i < sd_get_num(); ++i) {
         sd_card_t *sd_card_p = sd_get_by_num(i);
@@ -24,10 +24,10 @@ static void dma_irq_handler(const uint DMA_IRQ_num, io_rw_32 *dma_hw_ints_p) {
         }
     }
 }
-static void __not_in_flash_func(dma_irq_handler_0)() {
+static void __time_critical_func(dma_irq_handler_0)() {
     dma_irq_handler(DMA_IRQ_0, &dma_hw->ints0);
 }
-static void __not_in_flash_func(dma_irq_handler_1)() {
+static void __time_critical_func(dma_irq_handler_1)() {
     dma_irq_handler(DMA_IRQ_1, &dma_hw->ints1);
 }
 

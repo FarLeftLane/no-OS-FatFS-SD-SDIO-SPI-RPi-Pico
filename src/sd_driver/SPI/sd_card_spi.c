@@ -172,6 +172,7 @@
 #include <stdarg.h>
 //
 #include "crc.h"
+#include "ff.h" /* Obtains integer types */
 #include "diskio.h" /* Declarations of disk functions */  // Needed for STA_NOINIT, ...
 #include "hw_config.h"  // Hardware Configuration of the SPI and SD Card "objects"
 #include "my_debug.h"

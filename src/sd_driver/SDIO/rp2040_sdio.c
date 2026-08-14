@@ -91,7 +91,7 @@ static const uint8_t crc7_table[256] = {
 // is applied to each line separately and generates total of
 // 4 x 16 = 64 bits of checksum.
 __attribute__((optimize("Ofast")))
-uint64_t sdio_crc16_4bit_checksum(uint32_t *data, uint32_t num_words)
+uint64_t __time_critical_func(sdio_crc16_4bit_checksum)(uint32_t *data, uint32_t num_words)
 {
     uint64_t crc = 0;
     uint32_t *end = data + num_words;
@@ -493,7 +493,7 @@ sdio_status_t rp2040_sdio_rx_poll(sd_card_t *sd_card_p, size_t block_size_words)
  * Data transmission to SD card
  *******************************************************/
 
-static void sdio_start_next_block_tx(sd_card_t *sd_card_p)
+static void __time_critical_func(sdio_start_next_block_tx)(sd_card_t *sd_card_p)
 {
     // Initialize PIO
     pio_sm_init(SDIO_PIO, SDIO_DATA_SM, STATE.pio_data_tx_offset, &STATE.pio_cfg_data_tx);
@@ -553,7 +553,7 @@ static void sdio_start_next_block_tx(sd_card_t *sd_card_p)
     pio_sm_set_enabled(SDIO_PIO, SDIO_DATA_SM, true);
 }
 
-static void sdio_compute_next_tx_checksum(sd_card_t *sd_card_p)
+static void __time_critical_func(sdio_compute_next_tx_checksum)(sd_card_t *sd_card_p)
 {
     assert (STATE.blocks_done < STATE.total_blocks && STATE.blocks_checksumed < STATE.total_blocks);
     int blockidx = STATE.blocks_checksumed++;
@@ -590,7 +590,7 @@ sdio_status_t rp2040_sdio_tx_start(sd_card_t *sd_card_p, const uint8_t *buffer, 
     return SDIO_OK;
 }
 
-static sdio_status_t check_sdio_write_response(uint32_t card_response)
+static sdio_status_t __time_critical_func(check_sdio_write_response)(uint32_t card_response)
 {
     // Shift card response until top bit is 0 (the start bit)
     // The format of response is poorly documented in SDIO spec but refer to e.g.
@@ -626,7 +626,7 @@ static sdio_status_t check_sdio_write_response(uint32_t card_response)
 }
 
 // When a block finishes, this IRQ handler starts the next one
-void sdio_irq_handler(sd_card_t *sd_card_p) {
+void __time_critical_func(sdio_irq_handler)(sd_card_t *sd_card_p) {
     if (STATE.transfer_state == SDIO_TX)
     {
         if (!dma_channel_is_busy(SDIO_DMA_CH) && !dma_channel_is_busy(SDIO_DMA_CHB))
@@ -728,7 +728,7 @@ sdio_status_t rp2040_sdio_tx_poll(sd_card_t *sd_card_p, uint32_t *bytes_complete
 }
 
 // Force everything to idle state
-static sdio_status_t rp2040_sdio_stop(sd_card_t *sd_card_p)
+static sdio_status_t __time_critical_func(rp2040_sdio_stop)(sd_card_t *sd_card_p)
 {
     dma_channel_abort(SDIO_DMA_CH);
     dma_channel_abort(SDIO_DMA_CHB);
@@ -757,6 +757,11 @@ bool rp2040_sdio_init(sd_card_t *sd_card_p, float clk_div) {
             SDIO_PIO = pio0; // Default
         if (!sd_card_p->sdio_if_p->DMA_IRQ_num)
             sd_card_p->sdio_if_p->DMA_IRQ_num = DMA_IRQ_0; // Default
+
+        if (SDIO_CLK > 16)
+            pio_set_gpio_base(SDIO_PIO, 16);
+        else
+            pio_set_gpio_base(SDIO_PIO, 0);
 
         // pio_sm_claim(SDIO_PIO, SDIO_CMD_SM);
         // int pio_claim_unused_sm(PIO pio, bool required);
@@ -828,7 +833,12 @@ bool rp2040_sdio_init(sd_card_t *sd_card_p, float clk_div) {
 #if PICO_SDK_VERSION_MAJOR < 2
     typedef enum gpio_function gpio_function_t;
 #endif
-   gpio_function_t fn;
+    gpio_function_t fn;
+#if PICO_RP2350
+    if (pio2 == SDIO_PIO)
+        fn = GPIO_FUNC_PIO2;
+    else
+#endif
     if (pio1 == SDIO_PIO) 
         fn = GPIO_FUNC_PIO1;
     else

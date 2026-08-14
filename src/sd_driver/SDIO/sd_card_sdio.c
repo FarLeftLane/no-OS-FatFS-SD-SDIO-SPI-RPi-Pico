@@ -121,22 +121,37 @@ bool sd_sdio_begin(sd_card_t *sd_card_p)
         return false;
     }
 
-    // Send ACMD41 to begin card initialization and wait for it to complete
+    // Send CMD55 and ACMD41 to begin card initialization and wait for them to complete
     uint32_t start = millis();
     do {
-        if (!checkReturnOk(rp2040_sdio_command_R1(sd_card_p, CMD55_APP_CMD, 0, &reply)) || // APP_CMD
-            !checkReturnOk(rp2040_sdio_command_R3(sd_card_p, ACMD41_SD_SEND_OP_COND, 0xD0040000, &STATE.ocr))) // 3.0V voltage
-            // !checkReturnOk(rp2040_sdio_command_R1(sd_card_p, ACMD41, 0xC0100000, &STATE.ocr)))
-        {
+        //  CMD55 and ACMD41 can timeout or be busy as the card configures itself.  
+        //  Loop for 1000ms (sd_sdio_begin) before timing out to let the card come up.
+        STATE.error = rp2040_sdio_command_R1(sd_card_p, CMD55_APP_CMD, 0, &reply);
+        if ((STATE.error != SDIO_OK) && (STATE.error != SDIO_ERR_RESPONSE_TIMEOUT) && (STATE.error != SDIO_BUSY)) {
+            logSDError(sd_card_p, __LINE__);
             return false;
         }
+        else if (STATE.error != SDIO_OK) {
+            logSDError(sd_card_p, __LINE__);
+        }
+
+        STATE.error = rp2040_sdio_command_R3(sd_card_p, ACMD41_SD_SEND_OP_COND, 0xD0040000, &STATE.ocr);
+        if ((STATE.error != SDIO_OK) && (STATE.error != SDIO_ERR_RESPONSE_TIMEOUT) && (STATE.error != SDIO_BUSY)) {
+            logSDError(sd_card_p, __LINE__);
+            return false;
+        }
+        else if (STATE.error != SDIO_OK) {
+            logSDError(sd_card_p, __LINE__);
+        }
+
+        delay_ms(1);
 
         if ((uint32_t)(millis() - start) > sd_timeouts.sd_sdio_begin)
         {
             EMSG_PRINTF("SDIO card initialization timeout\n");
             return false;
         }
-    } while (!(STATE.ocr & (1 << 31)));
+    } while (!(STATE.ocr & (1 << 31)));             //  The card is ready and has negotiated voltage
 
     // Get CID
     // CMD2 is valid only in "ready" state;
@@ -230,8 +245,7 @@ uint32_t sd_sdio_errorLine(sd_card_t *sd_card_p) // const
 
 bool sd_sdio_isBusy(sd_card_t *sd_card_p) 
 {
-    // return (sio_hw->gpio_in & (1 << SDIO_D0)) == 0;
-    return (sio_hw->gpio_in & (1 << sd_card_p->sdio_if_p->D0_gpio)) == 0;
+    return (gpio_get(sd_card_p->sdio_if_p->D0_gpio) == 0);
 }
 
 bool sd_sdio_readOCR(sd_card_t *sd_card_p, uint32_t* ocr)
@@ -647,7 +661,8 @@ void sd_sdio_ctor(sd_card_t *sd_card_p) {
     myASSERT(!sd_card_p->sdio_if_p->D2_gpio);
     myASSERT(!sd_card_p->sdio_if_p->D3_gpio);
 
-    sd_card_p->sdio_if_p->CLK_gpio = (sd_card_p->sdio_if_p->D0_gpio + SDIO_CLK_PIN_D0_OFFSET) % 32;
+    // sd_card_p->sdio_if_p->CLK_gpio = (sd_card_p->sdio_if_p->D0_gpio + SDIO_CLK_PIN_D0_OFFSET) % 32;
+    sd_card_p->sdio_if_p->CLK_gpio = sd_card_p->sdio_if_p->D0_gpio - 2; // Oliver 
     sd_card_p->sdio_if_p->D1_gpio = sd_card_p->sdio_if_p->D0_gpio + 1;
     sd_card_p->sdio_if_p->D2_gpio = sd_card_p->sdio_if_p->D0_gpio + 2;
     sd_card_p->sdio_if_p->D3_gpio = sd_card_p->sdio_if_p->D0_gpio + 3;
