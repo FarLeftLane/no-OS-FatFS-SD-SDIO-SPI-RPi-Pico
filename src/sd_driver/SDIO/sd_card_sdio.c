@@ -122,6 +122,7 @@ bool sd_sdio_begin(sd_card_t *sd_card_p)
     }
 
     // Send CMD55 and ACMD41 to begin card initialization and wait for them to complete
+    // See also https://github.com/inindev/pico-fatfs-sd/commit/6391ba23bc8ebb63a5c3aee9bdac9b9ac9f81461
     uint32_t start = millis();
     do {
         //  CMD55 and ACMD41 can timeout or be busy as the card configures itself.  
