@@ -8,14 +8,18 @@
 / Function Configurations
 /---------------------------------------------------------------------------*/
 
+#ifndef FF_FS_READONLY
 #define FF_FS_READONLY	0
+#endif
 /* This option switches read-only configuration. (0:Read/Write or 1:Read-only)
 /  Read-only configuration removes writing API functions, f_write(), f_sync(),
 /  f_unlink(), f_mkdir(), f_chmod(), f_rename(), f_truncate(), f_getfree()
 /  and optional writing functions as well. */
 
 
+#ifndef FF_FS_MINIMIZE
 #define FF_FS_MINIMIZE	0
+#endif
 /* This option defines minimization level to remove some basic API functions.
 /
 /   0: Basic functions are fully enabled.
@@ -25,41 +29,63 @@
 /   3: f_lseek() function is removed in addition to 2. */
 
 
+#ifndef FF_USE_FIND
 #define FF_USE_FIND		1
+#endif
 /* This option switches filtered directory read functions, f_findfirst() and
 /  f_findnext(). (0:Disable, 1:Enable 2:Enable with matching altname[] too) */
 
 
+#ifndef FF_USE_MKFS
 #define FF_USE_MKFS		1
+#endif
 /* This option switches f_mkfs(). (0:Disable or 1:Enable) */
 
 
+#ifndef FF_USE_FASTSEEK
 #define FF_USE_FASTSEEK	1
+#endif
 /* This option switches fast seek feature. (0:Disable or 1:Enable) */
 
 
+#ifndef FF_USE_EXPAND
 #define FF_USE_EXPAND	1
+#endif
 /* This option switches f_expand(). (0:Disable or 1:Enable) */
 
 
+#ifndef FF_USE_CHMOD
 #define FF_USE_CHMOD	0
+#endif
 /* This option switches attribute control API functions, f_chmod() and f_utime().
 /  (0:Disable or 1:Enable) Also FF_FS_READONLY needs to be 0 to enable this option. */
 
 
+#ifndef FF_USE_LABEL
 #define FF_USE_LABEL	0
+#endif
 /* This option switches volume label API functions, f_getlabel() and f_setlabel().
 /  (0:Disable or 1:Enable) */
 
 
+#ifndef FF_USE_FORWARD
 #define FF_USE_FORWARD	0
+#endif
 /* This option switches f_forward(). (0:Disable or 1:Enable) */
 
 
+#ifndef FF_USE_STRFUNC
 #define FF_USE_STRFUNC	1
+#endif
+#ifndef FF_PRINT_LLI
 #define FF_PRINT_LLI	1
+#endif
+#ifndef FF_PRINT_FLOAT
 #define FF_PRINT_FLOAT	1
+#endif
+#ifndef FF_STRF_ENCODE
 #define FF_STRF_ENCODE	3
+#endif
 /* FF_USE_STRFUNC switches the string API functions, f_gets(), f_putc(), f_puts()
 /  and f_printf().
 /
@@ -84,7 +110,9 @@
 / Locale and Namespace Configurations
 /---------------------------------------------------------------------------*/
 
+#ifndef FF_CODE_PAGE
 #define FF_CODE_PAGE	437
+#endif
 /* This option specifies the OEM code page to be used on the target system.
 /  Incorrect code page setting can cause a file open failure.
 /
@@ -113,8 +141,12 @@
 */
 
 
+#ifndef FF_USE_LFN
 #define FF_USE_LFN		3
+#endif
+#ifndef FF_MAX_LFN
 #define FF_MAX_LFN		255
+#endif
 /* The FF_USE_LFN switches the support for LFN (long file name).
 /
 /   0: Disable LFN. FF_MAX_LFN has no effect.
@@ -133,7 +165,9 @@
 /  ff_memfree() exemplified in ffsystem.c, need to be added to the project. */
 
 
+#ifndef FF_LFN_UNICODE
 #define FF_LFN_UNICODE	2
+#endif
 /* This option switches the character encoding on the API when LFN is enabled.
 /
 /   0: ANSI/OEM in current CP (TCHAR = char)
@@ -145,15 +179,21 @@
 /  When LFN is not enabled, this option has no effect. */
 
 
+#ifndef FF_LFN_BUF
 #define FF_LFN_BUF		255
+#endif
+#ifndef FF_SFN_BUF
 #define FF_SFN_BUF		12
+#endif
 /* This set of options defines size of file name members in the FILINFO structure
 /  which is used to read out directory items. These values should be suffcient for
 /  the file names to read. The maximum possible length of the read file name depends
 /  on character encoding. When LFN is not enabled, these options have no effect. */
 
 
+#ifndef FF_FS_RPATH
 #define FF_FS_RPATH		2
+#endif
 /* This option configures support for relative path.
 /
 /   0: Disable relative path and remove related API functions.
@@ -166,12 +206,18 @@
 / Drive/Volume Configurations
 /---------------------------------------------------------------------------*/
 
+#ifndef FF_VOLUMES
 #define FF_VOLUMES		4
+#endif
 /* Number of volumes (logical drives) to be used. (1-10) */
 
 
+#ifndef FF_STR_VOLUME_ID
 #define FF_STR_VOLUME_ID	0
+#endif
+#ifndef FF_VOLUME_STRS
 #define FF_VOLUME_STRS		"RAM","NAND","CF","SD","SD2","USB","USB2","USB3"
+#endif
 /* FF_STR_VOLUME_ID switches support for volume ID in arbitrary strings.
 /  When FF_STR_VOLUME_ID is set to 1 or 2, arbitrary strings can be used as drive
 /  number in the path name. FF_VOLUME_STRS defines the volume ID strings for each
@@ -184,7 +230,9 @@
 */
 
 
+#ifndef FF_MULTI_PARTITION
 #define FF_MULTI_PARTITION	0
+#endif
 /* This option switches support for multiple volumes on the physical drive.
 /  By default (0), each logical drive number is bound to the same physical drive
 /  number and only an FAT volume found on the physical drive will be mounted.
@@ -193,8 +241,12 @@
 /  will be available. */
 
 
+#ifndef FF_MIN_SS
 #define FF_MIN_SS		512
+#endif
+#ifndef FF_MAX_SS
 #define FF_MAX_SS		512
+#endif
 /* This set of options configures the range of sector size to be supported. (512,
 /  1024, 2048 or 4096) Always set both 512 for most systems, generic memory card and
 /  harddisk, but a larger value may be required for on-board flash memory and some
@@ -203,17 +255,23 @@
 /  GET_SECTOR_SIZE command. */
 
 
+#ifndef FF_LBA64
 #define FF_LBA64		1
+#endif
 /* This option switches support for 64-bit LBA. (0:Disable or 1:Enable)
 /  To enable the 64-bit LBA, also exFAT needs to be enabled. (FF_FS_EXFAT == 1) */
 
 
+#ifndef FF_MIN_GPT
 #define FF_MIN_GPT		0x10000000
+#endif
 /* Minimum number of sectors to switch GPT as partitioning format in f_mkfs() and 
 /  f_fdisk(). 2^32 sectors maximum. This option has no effect when FF_LBA64 == 0. */
 
 
+#ifndef FF_USE_TRIM
 #define FF_USE_TRIM		0
+#endif
 /* This option switches support for ATA-TRIM. (0:Disable or 1:Enable)
 /  To enable this feature, also CTRL_TRIM command should be implemented to
 /  the disk_ioctl(). */
@@ -224,23 +282,35 @@
 / System Configurations
 /---------------------------------------------------------------------------*/
 
+#ifndef FF_FS_TINY
 #define FF_FS_TINY		0
+#endif
 /* This option switches tiny buffer configuration. (0:Normal or 1:Tiny)
 /  At the tiny configuration, size of file object (FIL) is shrinked FF_MAX_SS bytes.
 /  Instead of private sector buffer eliminated from the file object, common sector
 /  buffer in the filesystem object (FATFS) is used for the file data transfer. */
 
 
+#ifndef FF_FS_EXFAT
 #define FF_FS_EXFAT		1
+#endif
 /* This option switches support for exFAT filesystem. (0:Disable or 1:Enable)
 /  To enable exFAT, also LFN needs to be enabled. (FF_USE_LFN >= 1)
 /  Note that enabling exFAT discards ANSI C (C89) compatibility. */
 
 
+#ifndef FF_FS_NORTC
 #define FF_FS_NORTC		0
+#endif
+#ifndef FF_NORTC_MON
 #define FF_NORTC_MON	11
+#endif
+#ifndef FF_NORTC_MDAY
 #define FF_NORTC_MDAY	1
+#endif
+#ifndef FF_NORTC_YEAR
 #define FF_NORTC_YEAR	2024
+#endif
 /* The option FF_FS_NORTC switches timestamp feature. If the system does not have
 /  an RTC or valid timestamp is not needed, set FF_FS_NORTC = 1 to disable the
 /  timestamp feature. Every object modified by FatFs will have a fixed timestamp
@@ -251,7 +321,9 @@
 /  These options have no effect in read-only configuration (FF_FS_READONLY = 1). */
 
 
+#ifndef FF_FS_NOFSINFO
 #define FF_FS_NOFSINFO	0
+#endif
 /* If you need to know correct free space on the FAT32 volume, set bit 0 of this
 /  option, and f_getfree() at the first time after volume mount will force
 /  a full FAT scan. Bit 1 controls the use of last allocated cluster number.
@@ -263,7 +335,9 @@
 */
 
 
+#ifndef FF_FS_LOCK
 #define FF_FS_LOCK		16
+#endif
 /* The option FF_FS_LOCK switches file lock function to control duplicated file open
 /  and illegal operation to open objects. This option must be 0 when FF_FS_READONLY
 /  is 1.
@@ -275,8 +349,12 @@
 /      lock control is independent of re-entrancy. */
 
 
+#ifndef FF_FS_REENTRANT
 #define FF_FS_REENTRANT	0
+#endif
+#ifndef FF_FS_TIMEOUT
 #define FF_FS_TIMEOUT	1000
+#endif
 /* The option FF_FS_REENTRANT switches the re-entrancy (thread safe) of the FatFs
 /  module itself. Note that regardless of this option, file access to different
 /  volume is always re-entrant and volume control functions, f_mount(), f_mkfs()
