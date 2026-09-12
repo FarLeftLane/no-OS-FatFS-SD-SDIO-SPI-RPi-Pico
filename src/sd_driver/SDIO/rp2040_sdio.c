@@ -758,11 +758,6 @@ bool rp2040_sdio_init(sd_card_t *sd_card_p, float clk_div) {
         if (!sd_card_p->sdio_if_p->DMA_IRQ_num)
             sd_card_p->sdio_if_p->DMA_IRQ_num = DMA_IRQ_0; // Default
 
-        if (SDIO_CLK > 16)
-            pio_set_gpio_base(SDIO_PIO, 16);
-        else
-            pio_set_gpio_base(SDIO_PIO, 0);
-
         // pio_sm_claim(SDIO_PIO, SDIO_CMD_SM);
         // int pio_claim_unused_sm(PIO pio, bool required);
         SDIO_CMD_SM = pio_claim_unused_sm(SDIO_PIO, true);
@@ -784,6 +779,12 @@ bool rp2040_sdio_init(sd_card_t *sd_card_p, float clk_div) {
     dma_channel_abort(SDIO_DMA_CHB);
     pio_sm_set_enabled(SDIO_PIO, SDIO_CMD_SM, false);
     pio_sm_set_enabled(SDIO_PIO, SDIO_DATA_SM, false);
+
+    /* RP2350B: If SDIO pins are above GPIO 31, shift the PIO GPIO window so
+       that the 32-pin PIO address space covers the actual pins.  gpio_base=16
+       maps PIO pins 0-31 -> GPIOs 16-47. */
+    uint gpio_base = (SDIO_D0 >= 32) ? 16 : 0;
+    pio_set_gpio_base(SDIO_PIO, gpio_base);
 
     // Load PIO programs
     pio_clear_instruction_memory(SDIO_PIO);
@@ -827,8 +828,16 @@ bool rp2040_sdio_init(sd_card_t *sd_card_p, float clk_div) {
     // This reduces input delay.
     // Because the CLK is driven synchronously to CPU clock,
     // there should be no metastability problems.
-    SDIO_PIO->input_sync_bypass |= (1 << SDIO_CLK) | (1 << SDIO_CMD) | (1 << SDIO_D0) | (1 << SDIO_D1) | (1 << SDIO_D2) | (1 << SDIO_D3);
-
+    // Use PIO-relative pin numbers (subtract gpio_base) so that
+    // GPIOs above 31 don't overflow the 32-bit register.
+    {
+        uint gb = pio_get_gpio_base(SDIO_PIO);
+        SDIO_PIO->input_sync_bypass |=
+            (1u << (SDIO_CLK - gb)) | (1u << (SDIO_CMD - gb)) |
+            (1u << (SDIO_D0 - gb))  | (1u << (SDIO_D1 - gb))  |
+            (1u << (SDIO_D2 - gb))  | (1u << (SDIO_D3 - gb));
+    }
+    
     // Redirect GPIOs to PIO
 #if PICO_SDK_VERSION_MAJOR < 2
     typedef enum gpio_function gpio_function_t;
