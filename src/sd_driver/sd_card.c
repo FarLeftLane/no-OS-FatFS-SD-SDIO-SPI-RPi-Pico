@@ -63,8 +63,7 @@ sd_card_t *sd_get_by_drive_prefix(const char *const drive_prefix) {
     if (2 == strlen(drive_prefix) && isdigit((unsigned char)drive_prefix[0]) &&
         ':' == drive_prefix[1])
         return sd_get_by_num(atoi(drive_prefix));
-// #if FF_STR_VOLUME_ID
-#if 0 // Oliver
+#if FF_STR_VOLUME_ID
     for (size_t i = 0; i < sd_get_num(); ++i) {
         // Ignore '/', trailing ':'
         if (strstr(drive_prefix, VolumeStr[i])) return sd_get_by_num(i);
@@ -97,8 +96,7 @@ bool sd_card_detect(sd_card_t *sd_card_p) {
 }
 
 void sd_set_drive_prefix(sd_card_t *sd_card_p, size_t phy_drv_num) {
-// #if FF_STR_VOLUME_ID == 0
-#if 1 // Oliver
+#if FF_STR_VOLUME_ID == 0
     int rc = snprintf(sd_card_p->state.drive_prefix, sizeof sd_card_p->state.drive_prefix,
                       "%d:", phy_drv_num);
 #elif FF_STR_VOLUME_ID == 1 /* Arbitrary string is enabled */

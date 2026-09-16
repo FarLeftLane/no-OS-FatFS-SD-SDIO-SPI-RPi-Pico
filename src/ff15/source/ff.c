@@ -479,7 +479,8 @@ static volatile BYTE SysLockVolume;	/* Volume id who is locking Files[] */
 
 #if FF_STR_VOLUME_ID
 #ifdef FF_VOLUME_STRS
-static const char *const VolumeStr[FF_VOLUMES] = {FF_VOLUME_STRS};	/* Pre-defined volume ID */
+/* Not static because sd_get_by_drive_prefix() / sd_set_by_drive_prefix() refer to it */
+const char *const VolumeStr[FF_VOLUMES] = {FF_VOLUME_STRS};	/* Pre-defined volume ID */
 #endif
 #endif
 
