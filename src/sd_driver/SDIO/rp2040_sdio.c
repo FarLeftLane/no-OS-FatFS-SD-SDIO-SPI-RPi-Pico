@@ -830,6 +830,7 @@ bool rp2040_sdio_init(sd_card_t *sd_card_p, float clk_div) {
     // there should be no metastability problems.
     // Use PIO-relative pin numbers (subtract gpio_base) so that
     // GPIOs above 31 don't overflow the 32-bit register.
+#if 0
     {
         uint gb = pio_get_gpio_base(SDIO_PIO);
         SDIO_PIO->input_sync_bypass |=
@@ -837,7 +838,7 @@ bool rp2040_sdio_init(sd_card_t *sd_card_p, float clk_div) {
             (1u << (SDIO_D0 - gb))  | (1u << (SDIO_D1 - gb))  |
             (1u << (SDIO_D2 - gb))  | (1u << (SDIO_D3 - gb));
     }
-    
+#endif
     // Redirect GPIOs to PIO
 #if PICO_SDK_VERSION_MAJOR < 2
     typedef enum gpio_function gpio_function_t;
